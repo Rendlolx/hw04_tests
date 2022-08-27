@@ -3,6 +3,7 @@ import tempfile
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
@@ -20,6 +21,18 @@ class PostCreateFormTests(TestCase):
     def setUpClass(cls) -> None:
         super().setUpClass()
 
+        img_jpeg = (
+            b'\x47\x49\x46\x38\x39\x61\x01\x00'
+            b'\x01\x00\x00\x00\x00\x21\xf9\x04'
+            b'\x01\x0a\x00\x01\x00\x2c\x00\x00'
+            b'\x00\x00\x01\x00\x01\x00\x00\x02'
+            b'\x02\x4c\x01\x00\x3b'
+        )
+        upload_img = SimpleUploadedFile(
+            name='img.jpeg',
+            content=img_jpeg,
+            content_type='image/jpeg'
+        )
         cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
@@ -29,8 +42,10 @@ class PostCreateFormTests(TestCase):
         cls.post = Post.objects.create(
             text='Тестовый пост',
             group=cls.group,
-            author=cls.user
+            author=cls.user,
+            image=upload_img
         )
+        
 
         cls.form = PostForm()
 
@@ -78,7 +93,8 @@ class PostCreateFormTests(TestCase):
         self.assertTrue(
             Post.objects.filter(
                 text=f'{PostCreateFormTests.post.text}',
-                group=f'{PostCreateFormTests.group.id}'
+                group=f'{PostCreateFormTests.group.id}',
+                image=f'{PostCreateFormTests.post.image}'
             ).exists()
         )
 

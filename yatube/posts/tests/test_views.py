@@ -22,7 +22,7 @@ class PostViewsTest(TestCase):
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый пост',
-            group=cls.group
+            group=cls.group,
         )
 
     def setUp(self):
@@ -63,9 +63,11 @@ class PostViewsTest(TestCase):
         post_text_0 = first_object.text
         post_author_0 = first_object.author.username
         post_group_0 = first_object.group.title
+        post_image_0 = first_object.image
         self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
         self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
         self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
+        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
 
     def test_page_group_show_correct_context(self):
         response = self.author_client.get(
@@ -76,9 +78,11 @@ class PostViewsTest(TestCase):
         post_text_0 = first_object.text
         post_author_0 = first_object.author.username
         post_group_0 = first_object.group.title
+        post_image_0 = first_object.image
         self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
         self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
         self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
+        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
 
     def test_page_profile_show_correct_context(self):
         response = self.author_client.get(
@@ -89,11 +93,13 @@ class PostViewsTest(TestCase):
         post_text_0 = first_object.text
         post_author_0 = first_object.author.username
         post_group_0 = first_object.group.title
+        post_image_0 = first_object.image
         self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
         self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
         self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
+        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
 
-    def test_page_profile_show_correct_context(self):
+    def test_page_one_post_show_correct_context(self):
         response = self.author_client.get(
             reverse('posts:post_detail',
                     kwargs={'post_id': PostViewsTest.post.id})
@@ -102,9 +108,11 @@ class PostViewsTest(TestCase):
         post_text_0 = first_object.text
         post_author_0 = first_object.author.username
         post_group_0 = first_object.group.title
+        post_image_0 = first_object.image
         self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
         self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
         self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
+        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
 
     def test_create_page_show_correct_context(self):
         response = self.author_client.get(reverse('posts:post_create'))

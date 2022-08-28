@@ -52,12 +52,12 @@ class PostURLTest(TestCase):
 
     def test_authtorized_user(self):
         dict_urls = {
-            '/': 200,
-            f'/group/{PostURLTest.group.slug}/': 200,
-            f'/profile/{PostURLTest.post.author}/': 200,
-            f'/posts/{PostURLTest.post.id}/': 200,
-            '/unexisting_page/': 404,
-            '/create/': 200
+            '/': HTTPStatus.OK,
+            f'/group/{PostURLTest.group.slug}/': HTTPStatus.OK,
+            f'/profile/{PostURLTest.post.author}/': HTTPStatus.OK,
+            f'/posts/{PostURLTest.post.id}/': HTTPStatus.OK,
+            '/unexisting_page/': HTTPStatus.NOT_FOUND,
+            '/create/': HTTPStatus.OK
         }
         for url, status_code in dict_urls.items():
             with self.subTest(url=url):
@@ -66,13 +66,13 @@ class PostURLTest(TestCase):
 
     def test_author_get_url(self):
         dict_urls = {
-            '/': 200,
-            f'/group/{PostURLTest.group.slug}/': 200,
-            f'/profile/{PostURLTest.post.author}/': 200,
-            f'/posts/{PostURLTest.post.id}/': 200,
-            '/unexisting_page/': 404,
-            '/create/': 200,
-            f'/posts/{PostURLTest.post.id}/edit/': 200
+            '/': HTTPStatus.OK,
+            f'/group/{PostURLTest.group.slug}/': HTTPStatus.OK,
+            f'/profile/{PostURLTest.post.author}/': HTTPStatus.OK,
+            f'/posts/{PostURLTest.post.id}/': HTTPStatus.OK,
+            '/unexisting_page/': HTTPStatus.NOT_FOUND,
+            '/create/': HTTPStatus.OK,
+            f'/posts/{PostURLTest.post.id}/edit/': HTTPStatus.OK
         }
         for url, status_code in dict_urls.items():
             with self.subTest(url=url):
@@ -123,4 +123,4 @@ class StaticURLTests(TestCase):
 
     def test_homepage(self):
         response = self.guest_client.get('/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)

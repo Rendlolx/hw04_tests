@@ -26,6 +26,9 @@ class PostViewsTest(TestCase):
         )
 
     def setUp(self):
+        """Неавторизованный юзер"""
+        self.guest_client = Client()
+
         """Авторизованный юзер"""
         self.user = User.objects.create_user(username='Sereja')
         self.authorized_client = Client()
@@ -57,62 +60,50 @@ class PostViewsTest(TestCase):
                 response = self.author_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
+    def check_context_contains_page_or_post(self, context, post=False):
+        if post:
+            self.assertIn('post', context)
+            post = context['post']
+        else:
+            self.assertIn('page_obj', context)
+            post = context['page_obj'][0]
+        self.assertEqual(post.author, PostViewsTest.user)
+        self.assertEqual(post.text, PostViewsTest.post.text)
+        self.assertEqual(post.group, PostViewsTest.post.group)
+
     def test_page_show_correct_context(self):
-        response = self.author_client.get(reverse('posts:main'))
-        first_object = response.context['page_obj'][0]
-        post_text_0 = first_object.text
-        post_author_0 = first_object.author.username
-        post_group_0 = first_object.group.title
-        post_image_0 = first_object.image
-        self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
-        self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
-        self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
-        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
+        response = self.guest_client.get(reverse('posts:main'))
+        self.check_context_contains_page_or_post(response.context)
 
     def test_page_group_show_correct_context(self):
-        response = self.author_client.get(
-            reverse('posts:group',
-                    kwargs={'slug': PostViewsTest.group.slug})
+        response = self.guest_client.get(reverse(
+            'posts:group',
+            kwargs={'slug': PostViewsTest.group.slug})
         )
-        first_object = response.context['page_obj'][0]
-        post_text_0 = first_object.text
-        post_author_0 = first_object.author.username
-        post_group_0 = first_object.group.title
-        post_image_0 = first_object.image
-        self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
-        self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
-        self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
-        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
+        self.check_context_contains_page_or_post(response.context)
+
+        self.assertIn('group', response.context)
+        group = response.context['group']
+        self.assertEqual(group.title, PostViewsTest.group.title)
+        self.assertEqual(group.description, PostViewsTest.group.description)
 
     def test_page_profile_show_correct_context(self):
-        response = self.author_client.get(
+        response = self.guest_client.get(
             reverse('posts:profile',
                     kwargs={'username': PostViewsTest.post.author})
         )
-        first_object = response.context['page_obj'][0]
-        post_text_0 = first_object.text
-        post_author_0 = first_object.author.username
-        post_group_0 = first_object.group.title
-        post_image_0 = first_object.image
-        self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
-        self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
-        self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
-        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
+        self.check_context_contains_page_or_post(response.context)
+        self.assertIn('author', response.context)
+        self.assertEqual(response.context['author'], PostViewsTest.user)
 
     def test_page_one_post_show_correct_context(self):
         response = self.author_client.get(
             reverse('posts:post_detail',
                     kwargs={'post_id': PostViewsTest.post.id})
         )
-        first_object = response.context['post']
-        post_text_0 = first_object.text
-        post_author_0 = first_object.author.username
-        post_group_0 = first_object.group.title
-        post_image_0 = first_object.image
-        self.assertEqual(post_text_0, f'{PostViewsTest.post.text}')
-        self.assertEqual(post_author_0, f'{PostViewsTest.post.author}')
-        self.assertEqual(post_group_0, f'{PostViewsTest.group.title}')
-        self.assertEqual(post_image_0, f'{PostViewsTest.post.image}')
+        self.check_context_contains_page_or_post(response.context, post=True)
+        self.assertIn('author', response.context)
+        self.assertEqual(response.context['author'], PostViewsTest.user)
 
     def test_create_page_show_correct_context(self):
         response = self.author_client.get(reverse('posts:post_create'))

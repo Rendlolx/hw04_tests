@@ -125,7 +125,7 @@ class PostViewsTest(TestCase):
 
         response = self.author_client.get(
             reverse(
-                'posts:post_edit', 
+                'posts:post_edit',
                 kwargs={'post_id': PostViewsTest.post.id}
             )
         )

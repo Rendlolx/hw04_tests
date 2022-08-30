@@ -71,32 +71,6 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(post.author, PostCreateFormTests.post.author)
         self.assertEqual(post.group, PostCreateFormTests.group)
 
-        """Валидная форма создает запись в Post."""
-        form_data = {
-            'text': f'{PostCreateFormTests.post.text}',
-            'group': f'{PostCreateFormTests.group.id}',
-        }
-        response = self.author_client.post(
-            reverse('posts:post_create'),
-            data=form_data,
-            follow=True
-        )
-
-        self.assertRedirects(
-            response,
-            reverse(
-                'posts:profile',
-                kwargs={'username': PostCreateFormTests.post.author}
-            )
-        )
-
-        self.assertTrue(
-            Post.objects.filter(
-                text=f'{PostCreateFormTests.post.text}',
-                group=f'{PostCreateFormTests.group.id}',
-            ).exists()
-        )
-
     def test_post_edit(self):
         post_count = Post.objects.count()
         post = Post.objects.create(
@@ -126,31 +100,6 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(post.text, new_post_text)
         self.assertEqual(post.author, PostCreateFormTests.post.author)
         self.assertEqual(post.group.title, new_group.title)
-
-        """Валидная форма редактирует запись"""
-        form_data = {
-            'group': f'{PostCreateFormTests.group.id}',
-            'text': f'{PostCreateFormTests.post.text}',
-        }
-        response = self.author_client.post(
-            reverse("posts:post_edit",
-                    kwargs={'post_id': f'{PostCreateFormTests.post.id}'}),
-            data=form_data,
-            follow=True
-        )
-        self.assertRedirects(
-            response,
-            reverse("posts:post_detail",
-                    kwargs={"post_id": f'{PostCreateFormTests.post.id}'})
-        )
-        self.assertEqual(
-            Post.objects.first().text,
-            f'{PostCreateFormTests.post.text}'
-        )
-        self.assertEqual(
-            Post.objects.first().group.title,
-            f'{PostCreateFormTests.group.title}'
-        )
 
     def test_create_post_non_authorized_client(self):
         post_count = Post.objects.count()

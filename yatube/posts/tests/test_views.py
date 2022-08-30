@@ -105,31 +105,32 @@ class PostViewsTest(TestCase):
         self.assertIn('author', response.context)
         self.assertEqual(response.context['author'], PostViewsTest.user)
 
-    def test_create_page_show_correct_context(self):
-        response = self.author_client.get(reverse('posts:post_create'))
-        form_fields = {
-            'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_field = response.context['form'].fields[value]
-                self.assertIsInstance(form_field, expected)
-
-    def test_update_page_show_correct_context(self):
-        response = self.author_client.get(
+    def test_create_and_page_show_correct_context(self):
+        list_urls = [
+            reverse('posts:post_create'),
             reverse(
                 'posts:post_edit', kwargs={'post_id': PostViewsTest.post.id}
             )
+        ]
+        for url in list_urls:
+            response = self.author_client.get(url)
+            form_fields = {
+                'text': forms.fields.CharField,
+                'group': forms.fields.ChoiceField
+            }
+            for value, expected in form_fields.items():
+                with self.subTest(value=value):
+                    form_field = response.context['form'].fields[value]
+                    self.assertIsInstance(form_field, expected)
+
+        response = self.author_client.get(
+            reverse(
+                'posts:post_edit', 
+                kwargs={'post_id': PostViewsTest.post.id}
+            )
         )
-        form_fields = {
-            'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_field = response.context['form'].fields[value]
-                self.assertIsInstance(form_field, expected)
+        self.assertTrue(response.context['is_edit'])
+        self.assertEqual(response.context['is_edit'], PostViewsTest.post)
 
 
 class PaginatorViewsTest(TestCase):
@@ -164,46 +165,31 @@ class PaginatorViewsTest(TestCase):
         self.author_client = Client()
         self.author_client.force_login(PaginatorViewsTest.post.author)
 
-    def test_first_page_ten_records(self):
-        page_1 = 10
-        dict_pag = {
-            reverse('posts:main'): page_1,
+    def test_paginator_in_page_and_count(self):
+        first_page_amount = 10
+        second_page_amount = 3
+
+        pages = (
+            (1, first_page_amount),
+            (2, second_page_amount)
+        )
+
+        list_pag = [
+            reverse('posts:main'),
             reverse(
                 'posts:group',
                 kwargs={'slug': PaginatorViewsTest.group.slug}
-            ): page_1,
+            ),
             reverse(
                 'posts:profile',
                 kwargs={'username': PaginatorViewsTest.post.author}
-            ): page_1
-        }
+            )
+        ]
 
-        for reverse_name, count_to_page in dict_pag.items():
-            with self.subTest(reverse_name=reverse_name):
-                response = self.guest_client.get(reverse_name)
-                self.assertEqual(
-                    len(response.context['page_obj']),
-                    count_to_page
-                )
-
-    def test_second_page_three_records(self):
-        page_2 = 3
-        dict_pag = {
-            reverse('posts:main') + '?page=2': page_2,
-            reverse(
-                'posts:group',
-                kwargs={'slug': PaginatorViewsTest.group.slug}
-            ) + '?page=2': page_2,
-            reverse(
-                'posts:profile',
-                kwargs={'username': PaginatorViewsTest.post.author}
-            ) + '?page=2': page_2
-        }
-
-        for reverse_name, count_to_page in dict_pag.items():
-            with self.subTest(reverse_name=reverse_name):
-                response = self.guest_client.get(reverse_name)
-                self.assertEqual(
-                    len(response.context['page_obj']),
-                    count_to_page
-                )
+        for url in list_pag:
+            for page, count in pages:
+                with self.subTest(page=page):
+                    response = self.guest_client.get(url, {'page': page})
+                    self.assertEqual(
+                        len(response.context['page_obj']), count
+                    )

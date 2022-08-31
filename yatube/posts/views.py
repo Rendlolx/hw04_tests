@@ -64,7 +64,8 @@ def post_create(request):
         post.save()
         return redirect('posts:profile', username=post.author)
     context = {
-        'form': form
+        'form': form,
+        'is_edit': False
     }
     return render(request, template_name, context)
 
@@ -82,7 +83,6 @@ def post_edit(request, post_id):
         files=request.FILES or None,
         instance=post
     )
-    is_edit = post
     if form.is_valid():
         post = form.save()
         post.author = request.user
@@ -90,7 +90,7 @@ def post_edit(request, post_id):
         return redirect('posts:post_detail', post_id)
     context = {
         'form': form,
-        'is_edit': is_edit,
+        'is_edit': True,
         'post': post
     }
     return render(request, template_name, context)

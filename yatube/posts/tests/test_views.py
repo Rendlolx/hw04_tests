@@ -1,8 +1,8 @@
-from django import forms
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
+from ..forms import PostForm
 from ..models import Group, Post
 
 User = get_user_model()
@@ -114,23 +114,18 @@ class PostViewsTest(TestCase):
         ]
         for url in list_urls:
             response = self.author_client.get(url)
-            form_fields = {
-                'text': forms.fields.CharField,
-                'group': forms.fields.ChoiceField
-            }
-            for value, expected in form_fields.items():
-                with self.subTest(value=value):
-                    form_field = response.context['form'].fields[value]
-                    self.assertIsInstance(form_field, expected)
 
-        response = self.author_client.get(
-            reverse(
-                'posts:post_edit',
-                kwargs={'post_id': PostViewsTest.post.id}
-            )
-        )
-        self.assertTrue(response.context['is_edit'])
-        self.assertEqual(response.context['is_edit'], PostViewsTest.post)
+            self.assertIn('form', response.context)
+            self.assertIsInstance(response.context['form'], PostForm)
+
+            self.assertIn('is_edit', response.context)
+            is_edit = response.context['is_edit']
+            self.assertIsInstance(is_edit, bool)
+
+            if url == reverse('posts:post_create'):
+                self.assertEqual(is_edit, False)
+            else:
+                self.assertEqual(is_edit, True)
 
 
 class PaginatorViewsTest(TestCase):
